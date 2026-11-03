@@ -10,7 +10,8 @@
     "check": "node scripts/validate-content.mjs",
     "check:staged": "node scripts/validate-content.mjs --staged",
     "test:content": "node --test test/*.test.mjs",
-    "build": "node scripts/build-site.mjs"
+    "build": "node scripts/build-site.mjs",
+    "preview": "npm run build && node scripts/preview.mjs"
   },
   "devDependencies": {
     "linkedom": "0.18.15",

@@ -17,9 +17,11 @@ export function snapshot(ref) {
     return { files, read: file => git('show', `${ref}:${file}`) };
   }
   const files = new Set();
+  const ignored = new Set(splitPaths(git('ls-files', '--others', '--ignored', '--exclude-standard', '-z', '--', 'skills', 'prompts')));
   function walk(dir) {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       const file = path.posix.join(dir, entry.name);
+      if (ignored.has(file)) continue;
       if (entry.isSymbolicLink()) throw new Error(`${file}: 内容目录不支持软链接`);
       if (entry.isDirectory()) walk(file);
       else files.add(file);

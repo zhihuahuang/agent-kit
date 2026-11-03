@@ -47,6 +47,12 @@ test('构建保留引用资源、清理不安全 HTML，索引仅保留页面需
     'prompts/review.md',
     '---\nname: review\ndescription: 审查\nmetadata:\n  updated_at: "1793694300000"\n---\n请审查 {{code}}',
   );
+  f.write('.gitignore', 'skills/*/agents/\nskills/*/references/*.txt\n!skills/*/references/keep.txt\n');
+  f.write('skills/demo/agents/openai.yaml', '本地配置');
+  f.write('skills/demo/references/local.txt', '忽略内容');
+  f.write('skills/demo/references/keep.txt', '保留内容');
+  f.write('skills/demo/references/tracked.txt', '已跟踪内容');
+  assert.equal(f.run('git', ['add', '-f', 'skills/demo/references/tracked.txt']).status, 0);
   const result = f.run(process.execPath, [
     path.join(source, 'scripts/build-site.mjs'),
   ]);
@@ -70,6 +76,10 @@ test('构建保留引用资源、清理不安全 HTML，索引仅保留页面需
     ),
     '参考内容',
   );
+  assert.equal(existsSync(path.join(f.root, 'dist/resources/skills/demo/agents/openai.yaml')), false);
+  assert.equal(existsSync(path.join(f.root, 'dist/resources/skills/demo/references/local.txt')), false);
+  assert.equal(existsSync(path.join(f.root, 'dist/resources/skills/demo/references/keep.txt')), true);
+  assert.equal(existsSync(path.join(f.root, 'dist/resources/skills/demo/references/tracked.txt')), true);
   assert.equal(existsSync(path.join(f.root, 'dist/downloads')), false);
   assert.equal(items.find((item) => item.type === 'prompts').body, '请审查 {{code}}');
   assert.equal(Object.hasOwn(skill, 'body'), false);
