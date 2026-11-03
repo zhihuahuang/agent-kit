@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Agent Kit：集中管理、查找和使用 Agent Skills 与 Prompts。"
+    />
+    <title>Agent Kit · Skills & Prompts</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg?v=5" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module" src="./script.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#/">Agent Kit</a>
+      <div class="header-actions">
+        <div id="prompt-collection" class="prompt-collection" hidden>
+          <button
+            id="collection-toggle"
+            type="button"
+            aria-label="Prompt 拼接，已选 0 项"
+            aria-expanded="false"
+            aria-controls="collection-panel"
+            title="Prompt 拼接"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01" />
+            </svg>
+            <span id="collection-count">0</span>
+          </button>
+          <section
+            id="collection-panel"
+            class="collection-panel"
+            aria-labelledby="collection-title"
+            hidden
+          >
+            <div class="collection-heading">
+              <h2 id="collection-title">Prompt 拼接</h2>
+              <button id="copy-collection" type="button" disabled>
+                复制全部
+              </button>
+            </div>
+            <p id="collection-empty">尚未选择 Prompt</p>
+            <ol id="collection-list"></ol>
+            <p id="collection-status" class="muted" role="status"></p>
+          </section>
+        </div>
+        <a
+          class="github-link"
+          href="https://github.com/zhihuahuang/agent-kit"
+          aria-label="GitHub 仓库"
+          title="GitHub 仓库"
+        >
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              d="M12 .297C5.37.297 0 5.67 0 12.297c0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.043-1.61-4.043-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.09-.745.083-.729.083-.729 1.205.084 1.838 1.237 1.838 1.237 1.07 1.835 2.807 1.305 3.492.998.108-.776.418-1.305.762-1.605-2.665-.3-5.466-1.334-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.524.105-3.176 0 0 1.005-.322 3.3 1.23a11.5 11.5 0 0 1 3-.405c1.02.005 2.045.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.652.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"
+            />
+          </svg>
+        </a>
+      </div>
+    </header>
+    <main>
+      <section id="catalog">
+        <!-- prettier-ignore -->
+        <h1 class="wordmark" aria-label="Agent Kit"><span aria-hidden="true"> ███   ████ █████ █   █ █████     █   █ █████ █████
+█   █ █     █     ██  █   █       █  █    █     █
+█████ █ ███ ████  █ █ █   █       ███     █     █
+█   █ █   █ █     █  ██   █       █  █    █     █
+█   █  ███  █████ █   █   █       █   █ █████   █</span></h1>
+        <div class="toolbar">
+          <nav aria-label="资源类型">
+            <button
+              type="button"
+              class="tab active"
+              data-type="skills"
+              aria-pressed="true"
+            >
+              Skills
+              <span id="skills-count">0</span>
+            </button>
+            <button
+              type="button"
+              class="tab"
+              data-type="prompts"
+              aria-pressed="false"
+            >
+              Prompts
+              <span id="prompts-count">0</span>
+            </button>
+          </nav>
+          <div class="filters">
+            <label class="sr-only" for="search">搜索资源</label>
+            <input id="search" type="search" placeholder="搜索名称或描述…" />
+          </div>
+        </div>
+        <div class="list-header" aria-hidden="true">
+          <span>#</span>
+          <span>名称 / 描述</span>
+          <span class="column-time">最后更新</span>
+        </div>
+        <div id="list" class="resource-list"></div>
+        <div id="empty" class="empty" hidden>
+          <p id="empty-title">暂无 Skills</p>
+        </div>
+      </section>
+      <section id="detail" hidden>
+        <header class="detail-heading">
+          <div id="detail-type" class="eyebrow"></div>
+          <h1 id="detail-name" tabindex="-1"></h1>
+        </header>
+        <div class="detail-overview">
+          <div class="detail-main">
+            <p id="detail-description" class="intro"></p>
+            <section
+              id="install"
+              class="install"
+              aria-labelledby="install-title"
+              hidden
+            >
+              <h2 id="install-title">安装</h2>
+              <div class="install-command">
+                <span class="command-prefix" aria-hidden="true">$</span>
+                <pre><code id="install-command"></code></pre>
+                <button
+                  id="copy-install"
+                  type="button"
+                  aria-label="复制安装命令"
+                  title="复制安装命令"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <g class="copy-icon">
+                      <rect x="9" y="9" width="11" height="13" rx="2" />
+                      <path
+                        d="M5 16H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1"
+                      />
+                    </g>
+                    <path class="copied-icon" d="m5 12 4 4L20 5" />
+                  </svg>
+                </button>
+              </div>
+              <span id="install-status" class="muted" role="status"></span>
+            </section>
+            <div id="prompt-actions" class="prompt-actions" hidden>
+              <button
+                id="copy-prompt"
+                type="button"
+                aria-label="复制"
+                title="复制"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <g class="copy-icon">
+                    <rect x="9" y="9" width="11" height="13" rx="2" />
+                    <path
+                      d="M5 16H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1"
+                    />
+                  </g>
+                  <path class="copied-icon" d="m5 12 4 4L20 5" />
+                </svg>
+                <span>复制</span>
+              </button>
+              <button id="add-prompt" type="button">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+                  <path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01" />
+                </svg>
+                <span>拼接</span>
+              </button>
+              <span id="prompt-copy-status" class="muted" role="status"></span>
+            </div>
+          </div>
+          <aside class="detail-meta" aria-label="资源信息">
+            <div class="detail-meta-group">
+              <h2 class="detail-meta-title">最后更新</h2>
+              <time id="detail-time" class="detail-meta-value"></time>
+            </div>
+            <a id="source" target="_blank" rel="noopener noreferrer">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M10 13a5 5 0 0 0 7.1 0l3-3a5 5 0 0 0-7.1-7.1l-1.7 1.7"
+                />
+                <path
+                  d="M14 11a5 5 0 0 0-7.1 0l-3 3a5 5 0 0 0 7.1 7.1l1.7-1.7"
+                />
+              </svg>
+              <span>查看源码</span>
+            </a>
+          </aside>
+        </div>
+        <article id="markdown" class="markdown"></article>
+      </section>
+      <p id="error" class="error" role="alert" hidden></p>
+      <noscript>
+        请启用 JavaScript 查看资源列表，或直接访问 GitHub 仓库浏览内容。
+      </noscript>
+    </main>
+    <footer>
+      <span>Agent Kit</span>
+      <a
+        href="https://github.com/zhihuahuang/agent-kit/blob/main/CONTRIBUTING.md"
+      >
+        文档 ↗
+      </a>
+    </footer>
+  </body>
+</html>

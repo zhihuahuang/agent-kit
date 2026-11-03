@@ -1,0 +1,49 @@
+name: 内容检查
+
+on:
+  pull_request:
+  push:
+    branches-ignore: [main]
+  workflow_call:
+    inputs:
+      base:
+        required: true
+        type: string
+      head:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: 校验与构建
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.head || github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: 校验内容与更新时间
+        env:
+          BASE_SHA: ${{ inputs.base || github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ inputs.head || github.event.pull_request.head.sha || github.sha }}
+        run: |
+          npm run check
+          node scripts/validate-content.mjs --range "$BASE_SHA" "$HEAD_SHA"
+      - name: 运行内容与 hook 测试
+        run: npm run test:content
+      - name: 构建静态网站
+        run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: static-site
+          path: dist/
+          include-hidden-files: true
+          retention-days: 7
